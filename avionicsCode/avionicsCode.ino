@@ -70,7 +70,7 @@ void dmpDataReady() {
 void setup() {
   // put your setup code here, to run once:
 
-  Serial.begin(38400);
+  Serial.begin(115200);
   Xbee.begin(9600); //might change depending on Xbee setup
   Serial.print("Initializing SD card...");
   ms5611.begin(MS5611_ULTRA_HIGH_RES);
@@ -89,7 +89,7 @@ void setup() {
 
 #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
   Wire.begin();
-  Wire.setClock(400000); // 400kHz I2C clock. Comment this line if having compilation difficulties
+  //Wire.setClock(400000); // 400kHz I2C clock. Comment this line if having compilation difficulties
 #elif I2CDEV_IMPLEMENTATION == I2CDEV_BUILTIN_FASTWIRE
   Fastwire::setup(400, true);
 #endif
@@ -186,10 +186,15 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   barometerCalculations();
+  Serial.println("\nBaro");
   gpsData();
-  imuCalculations();
+  Serial.println("\nGPS");
+//  imuCalculations();
+  Serial.println("\nIMU");
   printInfo();
-  XbeeData();
+  Serial.println("\nData");
+  XBeeData();
+  Serial.println("\nXBee");
   sdWriting();
 }
 
@@ -309,27 +314,25 @@ void imuCalculations() {
     }
   }
 
-#ifdef OUTPUT_READABLE_EULER
-  // display Euler angles in degrees
-  mpu.dmpGetQuaternion(&q, fifoBuffer);
-  mpu.dmpGetEuler(euler, &q);
-  Serial.print("euler\t");
-  Serial.print(euler[0] * 180 / M_PI);
-  Serial.print("\t");
-  Serial.print(euler[1] * 180 / M_PI);
-  Serial.print("\t");
-  Serial.println(euler[2] * 180 / M_PI);
-#endif
-
-  // blink LED to indicate activity
-  blinkState = !blinkState;
-  digitalWrite(LED_PIN, blinkState);
+  //#ifdef OUTPUT_READABLE_QUATERNION
+  //  // display quaternion values in easy matrix form: w x y z
+  //  mpu.dmpGetQuaternion(&q, fifoBuffer);
+  //  Serial.print("quat\t");
+  //  Serial.print(q.w);
+  //  Serial.print("\t");
+  //  Serial.print(q.x);
+  //  Serial.print("\t");
+  //  Serial.print(q.y);
+  //  Serial.print("\t");
+  //  Serial.print(q.z);
+  //#endif
 }
 
 void gpsData() { // just checking to see if the gps is working
   byte b = GPS_SERIAL.read();
   GPS.encode(b);
   Serial.write(b);
+  delay(100);
 }
 
 void printInfo() {
@@ -364,8 +367,16 @@ void printInfo() {
   Serial.print(fireMain);
   Serial.print("\t");
   Serial.print(abs(millis() - alitimeterClock));
+  Serial.print("\t");
+  Serial.print(q.w);
+  Serial.print("\t");
+  Serial.print(q.x);
+  Serial.print("\t");
+  Serial.print(q.y);
+  Serial.print("\t");
+  Serial.print(q.z);
   Serial.println();
-  delay(100);
+  //delay(100);
 }
 
 void XBeeData() {
