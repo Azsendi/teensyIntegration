@@ -28,7 +28,6 @@ int readIndex = 0;
 #define OUTPUT_READABLE_QUATERNION
 #define INTERRUPT_PIN 2
 
-
 //********** Sensor definitions
 TinyGPSPlus GPS;
 MS5611 ms5611;
@@ -186,15 +185,15 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  barometerCalculations();
+//  barometerCalculations();
   Serial.println("\nBaro");
-  gpsData();
+//  gpsData();
   Serial.println("\nGPS");
   imuCalculations();
   Serial.println("\nIMU");
   printInfo();
   Serial.println("\nData");
-  XBeeData();
+//  XBeeData();
   Serial.println("\nXBee");
 //  sdWriting();
 }
@@ -266,67 +265,66 @@ void barometerCalculations() { //Copied from previous code. Works for sure if it
 
 void imuCalculations() {
   // if programming failed, don't try to do anything
-  if (!dmpReady) return;
+    if (!dmpReady) return;
 
-  // wait for MPU interrupt or extra packet(s) available
-  while (!mpuInterrupt && fifoCount < packetSize) {
-    if (mpuInterrupt && fifoCount < packetSize) {
-      // try to get out of the infinite loop
-      fifoCount = mpu.getFIFOCount();
+    // wait for MPU interrupt or extra packet(s) available
+    while (!mpuInterrupt && fifoCount < packetSize) {
+        if (mpuInterrupt && fifoCount < packetSize) {
+          // try to get out of the infinite loop 
+          fifoCount = mpu.getFIFOCount();
+        }  
+        // other program behavior stuff here
+        // .
+        // .
+        // .
+        // if you are really paranoid you can frequently test in between other
+        // stuff to see if mpuInterrupt is true, and if so, "break;" from the
+        // while() loop to immediately process the MPU data
+        // .
+        // .
+        // .
     }
-    // other program behavior stuff here
-    // .
-    // .
-    // .
-    // if you are really paranoid you can frequently test in between other
-    // stuff to see if mpuInterrupt is true, and if so, "break;" from the
-    // while() loop to immediately process the MPU data
-    // .
-    // .
-    // .
-  }
 
-  // reset interrupt flag and get INT_STATUS byte
-  mpuInterrupt = false;
-  mpuIntStatus = mpu.getIntStatus();
+    // reset interrupt flag and get INT_STATUS byte
+    mpuInterrupt = false;
+    mpuIntStatus = mpu.getIntStatus();
 
-  // get current FIFO count
-  fifoCount = mpu.getFIFOCount();
-  if (fifoCount < packetSize) {
-    //Lets go back and wait for another interrupt. We shouldn't be here, we got an interrupt from another event
-    // This is blocking so don't do it   while (fifoCount < packetSize) fifoCount = mpu.getFIFOCount();
+    // get current FIFO count
+    fifoCount = mpu.getFIFOCount();
+  if(fifoCount < packetSize){
+          //Lets go back and wait for another interrupt. We shouldn't be here, we got an interrupt from another event
+      // This is blocking so don't do it   while (fifoCount < packetSize) fifoCount = mpu.getFIFOCount();
   }
-  // check for overflow (this should never happen unless our code is too inefficient)
-  else if ((mpuIntStatus & _BV(MPU6050_INTERRUPT_FIFO_OFLOW_BIT)) || fifoCount >= 1024) {
-    // reset so we can continue cleanly
-    mpu.resetFIFO();
-    //  fifoCount = mpu.getFIFOCount();  // will be zero after reset no need to ask
-    Serial.println(F("FIFO overflow!"));
+    // check for overflow (this should never happen unless our code is too inefficient)
+    else if ((mpuIntStatus & _BV(MPU6050_INTERRUPT_FIFO_OFLOW_BIT)) || fifoCount >= 1024) {
+        // reset so we can continue cleanly
+        mpu.resetFIFO();
+      //  fifoCount = mpu.getFIFOCount();  // will be zero after reset no need to ask
+        Serial.println(F("FIFO overflow!"));
 
     // otherwise, check for DMP data ready interrupt (this should happen frequently)
-  } else if (mpuIntStatus & _BV(MPU6050_INTERRUPT_DMP_INT_BIT)) {
+    } else if (mpuIntStatus & _BV(MPU6050_INTERRUPT_DMP_INT_BIT)) {
 
-    // read a packet from FIFO
-    while (fifoCount >= packetSize) { // Lets catch up to NOW, someone is using the dreaded delay()!
-      mpu.getFIFOBytes(fifoBuffer, packetSize);
-      // track FIFO count here in case there is > 1 packet available
-      // (this lets us immediately read more without waiting for an interrupt)
-      fifoCount -= packetSize;
-    }
+        // read a packet from FIFO
+  while(fifoCount >= packetSize){ // Lets catch up to NOW, someone is using the dreaded delay()!
+    mpu.getFIFOBytes(fifoBuffer, packetSize);
+    // track FIFO count here in case there is > 1 packet available
+    // (this lets us immediately read more without waiting for an interrupt)
+    fifoCount -= packetSize;
   }
-
-  #ifdef OUTPUT_READABLE_QUATERNION
-    // display quaternion values in easy matrix form: w x y z
-    mpu.dmpGetQuaternion(&q, fifoBuffer);
-    Serial.print("quat\t");
-    Serial.print(q.w);
-    Serial.print("\t");
-    Serial.print(q.x);
-    Serial.print("\t");
-    Serial.print(q.y);
-    Serial.print("\t");
-    Serial.print(q.z);
-  #endif
+        #ifdef OUTPUT_READABLE_QUATERNION
+            // display quaternion values in easy matrix form: w x y z
+            mpu.dmpGetQuaternion(&q, fifoBuffer);
+            Serial.print("quat\t");
+            Serial.print(q.w);
+            Serial.print("\t");
+            Serial.print(q.x);
+            Serial.print("\t");
+            Serial.print(q.y);
+            Serial.print("\t");
+            Serial.println(q.z);
+        #endif
+  }
 }
 
 void gpsData() { // just checking to see if the gps is working
