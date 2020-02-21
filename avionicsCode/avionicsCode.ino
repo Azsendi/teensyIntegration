@@ -28,6 +28,7 @@ int readIndex = 0;
 #define OUTPUT_READABLE_QUATERNION
 #define INTERRUPT_PIN 2
 
+
 //********** Sensor definitions
 TinyGPSPlus GPS;
 MS5611 ms5611;
@@ -89,7 +90,7 @@ void setup() {
 
 #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
   Wire.begin();
-  //Wire.setClock(400000); // 400kHz I2C clock. Comment this line if having compilation difficulties
+  Wire.setClock(400000); // 400kHz I2C clock. Comment this line if having compilation difficulties
 #elif I2CDEV_IMPLEMENTATION == I2CDEV_BUILTIN_FASTWIRE
   Fastwire::setup(400, true);
 #endif
@@ -189,13 +190,13 @@ void loop() {
   Serial.println("\nBaro");
   gpsData();
   Serial.println("\nGPS");
-//  imuCalculations();
+  imuCalculations();
   Serial.println("\nIMU");
   printInfo();
   Serial.println("\nData");
   XBeeData();
   Serial.println("\nXBee");
-  sdWriting();
+//  sdWriting();
 }
 
 void barometerCalculations() { //Copied from previous code. Works for sure if it's just barometer only
@@ -314,18 +315,18 @@ void imuCalculations() {
     }
   }
 
-  //#ifdef OUTPUT_READABLE_QUATERNION
-  //  // display quaternion values in easy matrix form: w x y z
-  //  mpu.dmpGetQuaternion(&q, fifoBuffer);
-  //  Serial.print("quat\t");
-  //  Serial.print(q.w);
-  //  Serial.print("\t");
-  //  Serial.print(q.x);
-  //  Serial.print("\t");
-  //  Serial.print(q.y);
-  //  Serial.print("\t");
-  //  Serial.print(q.z);
-  //#endif
+  #ifdef OUTPUT_READABLE_QUATERNION
+    // display quaternion values in easy matrix form: w x y z
+    mpu.dmpGetQuaternion(&q, fifoBuffer);
+    Serial.print("quat\t");
+    Serial.print(q.w);
+    Serial.print("\t");
+    Serial.print(q.x);
+    Serial.print("\t");
+    Serial.print(q.y);
+    Serial.print("\t");
+    Serial.print(q.z);
+  #endif
 }
 
 void gpsData() { // just checking to see if the gps is working
