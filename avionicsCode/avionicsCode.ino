@@ -185,7 +185,7 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-//  barometerCalculations();
+  barometerCalculations();
   Serial.println("\nBaro");
 //  gpsData();
   Serial.println("\nGPS");
